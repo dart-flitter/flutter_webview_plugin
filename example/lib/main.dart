@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
+import 'material_dialogs.dart';
+
 const kAndroidUserAgent =
     'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Mobile Safari/537.36';
 
@@ -148,7 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
           barrierDismissible: false,
           builder: (_) => WillPopScope(
               onWillPop: () async => false,
-              child: PromptDialog(message: prompt.message)));
+              child: PromptDialog(message: prompt.message, defaultText: prompt.defaultText)));
     };
 
     flutterWebViewPlugin.close();
@@ -357,101 +359,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class MyAlertDialog extends StatelessWidget {
-  final String message;
-
-  MyAlertDialog({this.message = ''});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: Text(message),
-      actions: <Widget>[
-        FlatButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            }),
-      ],
-    );
-  }
-}
-
-class ConfirmDialog extends StatelessWidget {
-  final String message;
-
-  ConfirmDialog({this.message = ''});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: Text(message),
-      actions: <Widget>[
-        FlatButton(
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            }),
-        FlatButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            }),
-      ],
-    );
-  }
-}
-
-class PromptDialog extends StatefulWidget {
-  final String message;
-
-  PromptDialog({Key key, this.message}) : super(key: key);
-
-  @override
-  _PromptDialogState createState() => _PromptDialogState();
-}
-
-class _PromptDialogState extends State<PromptDialog> {
-  TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(widget.message),
-            TextField(controller: _controller),
-          ]),
-      actions: <Widget>[
-        FlatButton(
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop('');
-            }),
-        FlatButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop(_controller.text);
-            }),
-      ],
     );
   }
 }
