@@ -128,17 +128,27 @@ class _MyHomePageState extends State<MyHomePage> {
     flutterWebViewPlugin.onJSAlert = (alert) async {
       return await showDialog(
           context: context,
-          builder: (_) => MyAlertDialog(message: alert.message));
+          barrierDismissible: false,
+          builder: (_) => WillPopScope(
+              onWillPop: () async => false,
+              child: MyAlertDialog(message: alert.message)));
     };
     flutterWebViewPlugin.onJSConfirm = (confirm) async {
       return await showDialog(
-          context: context,
-          builder: (_) => ConfirmDialog(message: confirm.message));
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => WillPopScope(
+            onWillPop: () async => false,
+            child: ConfirmDialog(message: confirm.message)),
+      );
     };
     flutterWebViewPlugin.onJSPrompt = (prompt) async {
       return await showDialog(
           context: context,
-          builder: (_) => PromptDialog(message: prompt.message));
+          barrierDismissible: false,
+          builder: (_) => WillPopScope(
+              onWillPop: () async => false,
+              child: PromptDialog(message: prompt.message)));
     };
 
     flutterWebViewPlugin.close();
