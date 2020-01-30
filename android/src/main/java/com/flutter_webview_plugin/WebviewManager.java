@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -175,6 +177,96 @@ class WebviewManager {
 
         webView.setWebViewClient(webViewClient);
         webView.setWebChromeClient(new WebChromeClient() {
+
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
+                Map<String, Object> args = new HashMap<>();
+                args.put("url", url);
+                args.put("message", message);
+                FlutterWebviewPlugin.channel.invokeMethod("onJsAlert", args, new MethodChannel.Result() {
+                    @Override
+                    public void success(Object o) {
+                        if (result != null) {
+                            result.confirm();
+                        }
+                    }
+
+                    @Override
+                    public void error(String errorCode, String errorMessage, Object errorDetails) {
+                        System.out.println("error");
+                    }
+
+                    @Override
+                    public void notImplemented() {
+                        System.out.println("notImplemented");
+                    }
+                });
+                return true;
+            }
+
+            @Override
+            public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
+                Map<String, Object> args = new HashMap<>();
+                args.put("url", url);
+                args.put("message", message);
+                FlutterWebviewPlugin.channel.invokeMethod("onJsConfirm", args, new MethodChannel.Result() {
+                    @Override
+                    public void success(Object o) {
+                        if (o instanceof Boolean) {
+                            boolean boolResult = (Boolean) o;
+                            if (result != null) {
+                                if (boolResult) {
+                                    result.confirm();
+                                } else {
+                                    result.cancel();
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void error(String errorCode, String errorMessage, Object errorDetails) {
+
+                    }
+
+                    @Override
+                    public void notImplemented() {
+
+                    }
+                });
+                return true;
+            }
+
+            @Override
+            public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, final JsPromptResult result) {
+                Map<String, Object> args = new HashMap<>();
+                args.put("url", url);
+                args.put("message", message);
+                args.put("defaultText", defaultValue);
+                FlutterWebviewPlugin.channel.invokeMethod("onJsPrompt", args, new MethodChannel.Result() {
+                    @Override
+                    public void success(Object o) {
+                        if (o instanceof String) {
+                            String str = (String) o;
+                            if (result != null) {
+                                result.confirm(str);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void error(String errorCode, String errorMessage, Object errorDetails) {
+
+                    }
+
+                    @Override
+                    public void notImplemented() {
+
+                    }
+                });
+                return true;
+            }
+
             //The undocumented magic method override
             //Eclipse will swear at you if you try to put @Override here
             // For Android 3.0+

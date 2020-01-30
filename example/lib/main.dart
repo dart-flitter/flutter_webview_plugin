@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -124,6 +125,21 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    flutterWebViewPlugin.onJSAlert = (alert) async {
+      return await showDialog(
+          context: context,
+          builder: (_) => MyAlertDialog(message: alert.message));
+    };
+    flutterWebViewPlugin.onJSConfirm = (confirm) async {
+      return await showDialog(
+          context: context,
+          builder: (_) => ConfirmDialog(message: confirm.message));
+    };
+    flutterWebViewPlugin.onJSPrompt = (prompt) async {
+      return await showDialog(
+          context: context,
+          builder: (_) => PromptDialog(message: prompt.message));
+    };
 
     flutterWebViewPlugin.close();
 
@@ -275,6 +291,41 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             RaisedButton(
               onPressed: () {
+                final future = flutterWebViewPlugin.evalJavascript('alert("Hello World");');
+                future.then((String result) {
+                  setState(() {
+                    _history.add('eval: $result');
+                  });
+                });
+              },
+              child: const Text('Eval javascript alert()'),
+            ),
+            RaisedButton(
+              onPressed: () {
+                final future = flutterWebViewPlugin
+                    .evalJavascript('confirm("Hello World");');
+                future.then((String result) {
+                  setState(() {
+                    _history.add('eval: $result');
+                  });
+                });
+              },
+              child: const Text('Eval javascript confirm()'),
+            ),
+            RaisedButton(
+              onPressed: () {
+                final future = flutterWebViewPlugin.evalJavascript(
+                    'prompt("Please enter your name", "Harry Potter");');
+                future.then((String result) {
+                  setState(() {
+                    _history.add('eval: $result');
+                  });
+                });
+              },
+              child: const Text('Eval javascript prompt()'),
+            ),
+            RaisedButton(
+              onPressed: () {
                 setState(() {
                   _history.clear();
                 });
@@ -296,6 +347,101 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class MyAlertDialog extends StatelessWidget {
+  final String message;
+
+  MyAlertDialog({this.message = ''});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Text(message),
+      actions: <Widget>[
+        FlatButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            }),
+      ],
+    );
+  }
+}
+
+class ConfirmDialog extends StatelessWidget {
+  final String message;
+
+  ConfirmDialog({this.message = ''});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Text(message),
+      actions: <Widget>[
+        FlatButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            }),
+        FlatButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            }),
+      ],
+    );
+  }
+}
+
+class PromptDialog extends StatefulWidget {
+  final String message;
+
+  PromptDialog({Key key, this.message}) : super(key: key);
+
+  @override
+  _PromptDialogState createState() => _PromptDialogState();
+}
+
+class _PromptDialogState extends State<PromptDialog> {
+  TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(widget.message),
+            TextField(controller: _controller),
+          ]),
+      actions: <Widget>[
+        FlatButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop('');
+            }),
+        FlatButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop(_controller.text);
+            }),
+      ],
     );
   }
 }
