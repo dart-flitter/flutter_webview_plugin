@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+
+import 'material_dialogs.dart';
 
 const kAndroidUserAgent =
     'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Mobile Safari/537.36';
@@ -124,6 +127,31 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    flutterWebViewPlugin.onJSAlert = (alert) async {
+      return await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => WillPopScope(
+              onWillPop: () async => false,
+              child: MyAlertDialog(message: alert.message)));
+    };
+    flutterWebViewPlugin.onJSConfirm = (confirm) async {
+      return await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => WillPopScope(
+            onWillPop: () async => false,
+            child: ConfirmDialog(message: confirm.message)),
+      );
+    };
+    flutterWebViewPlugin.onJSPrompt = (prompt) async {
+      return await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => WillPopScope(
+              onWillPop: () async => false,
+              child: PromptDialog(message: prompt.message, defaultText: prompt.defaultText)));
+    };
 
     flutterWebViewPlugin.close();
 
@@ -272,6 +300,41 @@ class _MyHomePageState extends State<MyHomePage> {
                 });
               },
               child: const Text('Eval some javascript'),
+            ),
+            RaisedButton(
+              onPressed: () {
+                final future = flutterWebViewPlugin.evalJavascript('alert("Hello World");');
+                future.then((String result) {
+                  setState(() {
+                    _history.add('eval: $result');
+                  });
+                });
+              },
+              child: const Text('Eval javascript alert()'),
+            ),
+            RaisedButton(
+              onPressed: () {
+                final future = flutterWebViewPlugin
+                    .evalJavascript('confirm("Hello World");');
+                future.then((String result) {
+                  setState(() {
+                    _history.add('eval: $result');
+                  });
+                });
+              },
+              child: const Text('Eval javascript confirm()'),
+            ),
+            RaisedButton(
+              onPressed: () {
+                final future = flutterWebViewPlugin.evalJavascript(
+                    'prompt("Please enter your name", "Harry Potter");');
+                future.then((String result) {
+                  setState(() {
+                    _history.add('eval: $result');
+                  });
+                });
+              },
+              child: const Text('Eval javascript prompt()'),
             ),
             RaisedButton(
               onPressed: () {

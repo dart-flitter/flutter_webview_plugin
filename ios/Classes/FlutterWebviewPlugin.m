@@ -477,4 +477,44 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     }
 }
 
+#pragma mark -- WKUIDelegate
+- (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler
+{
+    [channel invokeMethod:@"onJsAlert" arguments:@{@"url": webView.URL.absoluteString, @"message": message} result:^(id  _Nullable result) {
+        completionHandler();
+    }];
+}
+
+- (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL result))completionHandler
+{
+    [channel invokeMethod:@"onJsConfirm" arguments:@{@"url": webView.URL.absoluteString, @"message": message} result:^(id  _Nullable result) {
+        if ([result isKindOfClass:[NSNumber class]]) {
+            NSNumber* b = result;
+            completionHandler([b boolValue]);
+            return;
+        } else if ([result isKindOfClass:[FlutterError class]]) {
+            FlutterError* flutterError = result;
+            NSLog(@"Error code: %@ message: %@ details: %@",
+                  flutterError.code, flutterError.message, flutterError.details);
+        }
+        completionHandler(NO);
+    }];
+}
+
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *result))completionHandler
+{
+    [channel invokeMethod:@"onJsPrompt" arguments:@{@"url": webView.URL.absoluteString, @"message": prompt, @"defaultText": defaultText} result:^(id  _Nullable result) {
+        if ([result isKindOfClass: [NSString class]]) {
+            NSString *str = result;
+            completionHandler(str);
+            return;
+        } else if ([result isKindOfClass:[FlutterError class]]) {
+            FlutterError* flutterError = result;
+            NSLog(@"Error code: %@ message: %@ details: %@",
+                  flutterError.code, flutterError.message, flutterError.details);
+        }
+        completionHandler(@"");
+    }];
+}
+
 @end
