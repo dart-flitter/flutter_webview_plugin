@@ -130,6 +130,7 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
         boolean ignoreSSLErrors = call.argument("ignoreSSLErrors");
 
         if (webViewManager == null || webViewManager.closed == true) {
+            @SuppressWarnigns("unchecked")
             Map<String, Object> arguments = (Map<String, Object>) call.arguments;
             List<String> channelNames = new ArrayList();
             if (arguments.containsKey(JS_CHANNEL_NAMES_FIELD)) {
