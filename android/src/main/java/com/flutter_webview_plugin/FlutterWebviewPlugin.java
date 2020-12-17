@@ -133,6 +133,7 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
             Map<String, Object> arguments = (Map<String, Object>) call.arguments;
             List<String> channelNames = new ArrayList();
             if (arguments.containsKey(JS_CHANNEL_NAMES_FIELD)) {
+                @SuppressWarnings("unchecked")
                 channelNames = (List<String>) arguments.get(JS_CHANNEL_NAMES_FIELD);
             }
             webViewManager = new WebviewManager(activity, context, channelNames);
