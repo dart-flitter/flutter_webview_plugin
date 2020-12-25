@@ -3,7 +3,7 @@
 
 static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 
-// UIWebViewDelegate
+// WKNavigationDelegate, WKUIDelegate
 @interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate, WKUIDelegate> {
     BOOL _enableAppScheme;
     BOOL _enableZoom;
